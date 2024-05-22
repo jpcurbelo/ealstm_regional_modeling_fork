@@ -54,11 +54,16 @@ GLOBAL_SETTINGS = {
     'train_start': pd.to_datetime('01101999', format='%d%m%Y'),
     'train_end': pd.to_datetime('30092008', format='%d%m%Y'),
     'val_start': pd.to_datetime('01101989', format='%d%m%Y'),
-    'val_end': pd.to_datetime('30091999', format='%d%m%Y')
+    'val_end': pd.to_datetime('30091999', format='%d%m%Y'),
+    'save_model_every': 5,
 }
 
 # check if GPU is available
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+print(f"Using device {DEVICE}")
+
+modeltype = "lstm"
 
 ###############
 # Prepare run #
@@ -98,6 +103,7 @@ def get_args() -> Dict:
                         type=bool,
                         default=False,
                         help="If True, uses mean squared error as loss function.")
+
     cfg = vars(parser.parse_args())
 
     # Validation checks
@@ -141,7 +147,7 @@ def _setup_run(cfg: Dict) -> Dict:
     month = f"{now.month}".zfill(2)
     hour = f"{now.hour}".zfill(2)
     minute = f"{now.minute}".zfill(2)
-    run_name = f'run_{day}{month}_{hour}{minute}_seed{cfg["seed"]}'
+    run_name = f'run_{modeltype}_{month}{day}_{hour}{minute}_seed{cfg["seed"]}'
     cfg['run_dir'] = Path(__file__).absolute().parent / "runs" / run_name
     if not cfg["run_dir"].is_dir():
         cfg["train_dir"] = cfg["run_dir"] / 'data' / 'train'
@@ -351,8 +357,9 @@ def train(cfg):
 
         train_epoch(model, optimizer, loss_func, loader, cfg, epoch, cfg["use_mse"])
 
-        model_path = cfg["run_dir"] / f"model_epoch{epoch}.pt"
-        torch.save(model.state_dict(), str(model_path))
+        if epoch == 1 or (epoch % cfg["save_model_every"] == 0):
+            model_path = cfg["run_dir"] / f"model_epoch{epoch}.pt"
+            torch.save(model.state_dict(), str(model_path))
 
 
 def train_epoch(model: nn.Module, optimizer: torch.optim.Optimizer, loss_func: nn.Module,

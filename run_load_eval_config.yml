@@ -1,0 +1,5 @@
+
+job_dir: run_2703_1441_seed111
+
+metrics:
+# 'NSE', 'alpha_nse', 'beta_nse', 'FHV', 'FLV', 'FMS'

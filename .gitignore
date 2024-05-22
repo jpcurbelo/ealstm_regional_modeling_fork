@@ -5,3 +5,6 @@
 */.ipynb_checkpoints/*.ipynb
 .vscode
 runs/
+data/EALSTM_PAPER_runs/*
+data/EALSTM_PAPER_results_loss_MSE/*
+data/benchmark_models/*

@@ -10,6 +10,8 @@ see <https://opensource.org/licenses/Apache-2.0>
 """
 
 import numpy as np
+from typing import List
+from scipy import stats, signal
 
 
 def calc_nse(obs: np.ndarray, sim: np.ndarray) -> float:
@@ -61,7 +63,6 @@ def calc_nse(obs: np.ndarray, sim: np.ndarray) -> float:
 
     return nse_val
 
-
 def calc_alpha_nse(obs: np.ndarray, sim: np.ndarray) -> float:
     """Alpha decomposition of the NSE, see Gupta et al. 2009
 
@@ -91,7 +92,6 @@ def calc_alpha_nse(obs: np.ndarray, sim: np.ndarray) -> float:
 
     return np.std(sim) / np.std(obs)
 
-
 def calc_beta_nse(obs: np.ndarray, sim: np.ndarray) -> float:
     """Beta decomposition of NSE. See Gupta et. al 2009
     
@@ -120,7 +120,6 @@ def calc_beta_nse(obs: np.ndarray, sim: np.ndarray) -> float:
         raise RuntimeError("obs and sim must be of the same length.")
 
     return (np.mean(sim) - np.mean(obs)) / np.std(obs)
-
 
 def calc_fdc_fms(obs: np.ndarray, sim: np.ndarray, m1: float = 0.2, m2: float = 0.7) -> float:
     """[summary]
@@ -186,7 +185,6 @@ def calc_fdc_fms(obs: np.ndarray, sim: np.ndarray, m1: float = 0.2, m2: float = 
 
     return fms * 100
 
-
 def calc_fdc_fhv(obs: np.ndarray, sim: np.ndarray, h: float = 0.02) -> float:
     """Peak flow bias of the flow duration curve (Yilmaz 2018).
     
@@ -232,7 +230,6 @@ def calc_fdc_fhv(obs: np.ndarray, sim: np.ndarray, h: float = 0.02) -> float:
     fhv = np.sum(sim - obs) / (np.sum(obs) + 1e-6)
 
     return fhv * 100
-
 
 def calc_fdc_flv(obs: np.ndarray, sim: np.ndarray, l: float = 0.7) -> float:
     """[summary]
@@ -292,3 +289,105 @@ def calc_fdc_flv(obs: np.ndarray, sim: np.ndarray, l: float = 0.7) -> float:
     flv = -1 * (qsl - qol) / (qol + 1e-6)
 
     return flv * 100
+
+
+def calc_kge(obs: np.ndarray, sim: np.ndarray, weights: List[float] = [1., 1., 1.]) -> float:
+    """Kling-Gupta Efficiency
+    
+    Parameters
+    ----------
+    obs : np.ndarray
+        Array containing the discharge observations
+    sim : np.ndarray
+        Array containing the discharge simulations
+    weights : List[float], optional
+        Weights for the three components of the KGE, by default [1., 1., 1.]
+    
+    Returns
+    -------
+    float
+        Kling-Gupta Efficiency
+    
+    Raises
+    ------
+    RuntimeError
+        If `obs` and `sim` don't have the same length
+    RuntimeError
+        If all values in the observations are equal
+    """
+
+    if len(weights) != 3:
+        raise ValueError("Weights of the KGE must be a list of three values")
+
+    # Pearson correlation coefficient
+    r, _ = stats.pearsonr(obs, sim)
+
+    alpha = np.std(sim) / np.std(obs)
+    beta = np.mean(sim) / np.mean(obs)
+
+    kge_val = (weights[0] * (r - 1)**2 + weights[1] * (alpha - 1)**2 + weights[2] * (beta - 1)**2)
+
+    return kge_val
+
+def calc_beta_kge(obs: np.ndarray, sim: np.ndarray) -> float:
+    """Beta decomposition of the KGE
+    
+    Parameters
+    ----------
+    obs : np.ndarray
+        Array containing the discharge observations
+    sim : np.ndarray
+        Array containing the discharge simulations
+    
+    Returns
+    -------
+    float
+        Beta decomposition of the KGE
+    
+    Raises
+    ------
+    RuntimeError
+        If `obs` and `sim` don't have the same length
+    """
+    # make sure that metric is calculated over the same dimension
+    obs = obs.flatten()
+    sim = sim.flatten()
+
+    if obs.shape != sim.shape:
+        raise RuntimeError("obs and sim must be of the same length.")
+
+    return (np.mean(sim) / np.mean(obs))
+
+def calc_pearson_r(obs: np.ndarray, sim: np.ndarray) -> float:
+    """Pearson correlation coefficient
+    
+    Parameters
+    ----------
+    obs : np.ndarray
+        Array containing the discharge observations
+    sim : np.ndarray
+        Array containing the discharge simulations
+    
+    Returns
+    -------
+    float
+        Pearson correlation coefficient
+    
+    Raises
+    ------
+    RuntimeError
+        If `obs` and `sim` don't have the same length
+    """
+    # make sure that metric is calculated over the same dimension
+    obs = obs.flatten()
+    sim = sim.flatten()
+
+    if obs.shape != sim.shape:
+        raise RuntimeError("obs and sim must be of the same length.")
+
+    return stats.pearsonr(obs, sim)[0]
+
+
+# metrics:
+# - Peak-Timing
+# - Peak-MAPE

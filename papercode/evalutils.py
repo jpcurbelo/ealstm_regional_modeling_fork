@@ -231,6 +231,16 @@ def get_mean_basin_performance(metrics: dict, model: str) -> Dict:
             metric[basin].append(nse)
     return {basin: np.mean(values) for basin, values in metric.items()}
 
+def get_seed_basin_performance(metrics: dict, model: str, seed: str) -> Dict:
+    
+    metric = defaultdict(list)
+    
+    for basin, nse in metrics[model][seed].items():
+        metric[basin].append(nse)
+        
+    return {basin: np.mean(values) for basin, values in metric.items()}
+
+
 
 def get_cohens_d(values1: List, values2: List) -> float:
     """Calculate Cohen's Effect size

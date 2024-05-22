@@ -89,6 +89,11 @@ To train a model, run the following line of code from the terminal
 
 ```
 python main.py train --camels_root /path/to/CAMELS
+
+
+python main.py train --camels_root ../../../../../gladwell/hydrology/SUMMA/summa-ml-models/CAMELS_US --seed 111 --cache_data False --no_static True
+
+python main.py train --camels_root ../../../../../gladwell/hydrology/SUMMA/summa-ml-models/CAMELS_US --seed 111 --cache_data True --no_static True
 ```
 This would train a single EA-LSTM model with a randomly generated seed using the basin average NSE as loss function and store the results under `runs/`. Additionally the following options can be passed:
 
@@ -105,6 +110,11 @@ To evaluate a model, once training is finished, run the following line of code f
 
 ```
 python main.py evaluate --camels_root /path/to/CAMELS --run_dir path/to/model_run
+
+
+python main.py evaluate --camels_root ../../../../../gladwell/hydrology/SUMMA/summa-ml-models/CAMELS_US --run_dir runs/XXX
+
+
 ```
 This will calculate the discharge simulation for the validation period and store the results alongside the observed discharge for all basins in a pickle file. The pickle file is stored in the main directory of the model run.
 
